@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Payload generated
+src/payload-types.ts
+
+# Uploads
+public/media/
+
+# Misc
+.DS_Store
