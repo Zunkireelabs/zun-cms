@@ -1,0 +1,38 @@
+import type { CollectionConfig } from 'payload'
+import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
+
+export const ProductDomains: CollectionConfig = {
+  slug: 'product-domains',
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'slug'],
+  },
+  hooks: {
+    afterChange: [afterChangeRevalidate('product-domains')],
+    afterDelete: [afterDeleteRevalidate('product-domains')],
+  },
+  fields: [
+    { name: 'slug', type: 'text', required: true, unique: true },
+    { name: 'title', type: 'text', required: true },
+    { name: 'description', type: 'textarea', required: true },
+    { name: 'image', type: 'upload', relationTo: 'media' },
+    {
+      name: 'externalImageUrl',
+      type: 'text',
+      admin: { description: 'For external image URLs (e.g. hunterdouglasgroup.com)' },
+    },
+    {
+      name: 'imagePosition',
+      type: 'select',
+      options: ['object-center', 'object-top', 'object-bottom'],
+      defaultValue: 'object-center',
+    },
+    {
+      name: 'projectKeywords',
+      type: 'array',
+      fields: [
+        { name: 'value', type: 'text', required: true },
+      ],
+    },
+  ],
+}
