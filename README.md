@@ -75,9 +75,9 @@ docker compose up -d
 
 ### 5. Seed content on first deploy
 ```bash
-# Copy cms-web-dev to the server OR run seed locally against prod DB
-docker compose exec app node -e "require('./seed')"
-# OR run locally: DATABASE_URI=<prod-db-url> pnpm seed
+# Run the seed locally, pointing at the production database.
+# The seed/ directory is excluded from the Docker image so it must run locally.
+DATABASE_URI=postgresql://postgres:<POSTGRES_PASSWORD>@<VPS_IP>:5432/zun_cms pnpm seed
 ```
 
 ### Subsequent deploys
