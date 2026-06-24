@@ -74,10 +74,16 @@ docker compose up -d
 ```
 
 ### 5. Seed content on first deploy
+
+The seed script runs locally against the production database. Port 5432 is not
+exposed publicly — use an SSH tunnel:
+
 ```bash
-# Run the seed locally, pointing at the production database.
-# The seed/ directory is excluded from the Docker image so it must run locally.
-DATABASE_URI=postgresql://postgres:<POSTGRES_PASSWORD>@<VPS_IP>:5432/zun_cms pnpm seed
+# 1. Open an SSH tunnel to the VPS postgres (in a separate terminal)
+ssh -L 5432:localhost:5432 user@<VPS_IP>
+
+# 2. Run the seed locally through the tunnel
+DATABASE_URI=postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/zun_cms pnpm seed
 ```
 
 ### Subsequent deploys

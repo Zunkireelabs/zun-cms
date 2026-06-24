@@ -13,4 +13,4 @@ docker compose up -d
 echo "Cleaning up old images..."
 docker image prune -f
 
-echo "Deploy complete! CMS is running at $NEXT_PUBLIC_SERVER_URL"
+echo "Deploy complete!"
