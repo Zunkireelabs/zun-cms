@@ -45,7 +45,13 @@ export default buildConfig({
     Milestones,
   ],
   globals: [SiteConfig],
-  secret: process.env.PAYLOAD_SECRET ?? 'dev-secret-change-me',
+  secret: (() => {
+    const secret = process.env.PAYLOAD_SECRET
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new Error('PAYLOAD_SECRET env var is required in production')
+    }
+    return secret ?? 'dev-secret-change-me'
+  })(),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

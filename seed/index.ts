@@ -101,15 +101,16 @@ async function seedAdminUser(payload: Awaited<ReturnType<typeof getPayload>>) {
       console.log('  [skip] Admin user already exists')
       return
     }
+    const email = process.env.SEED_ADMIN_EMAIL
+    const password = process.env.SEED_ADMIN_PASSWORD
+    if (!email || !password) {
+      throw new Error('SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD env vars are required to seed the admin user')
+    }
     await payload.create({
       collection: 'users',
-      data: {
-        email: 'admin@cmsgroup.com.np',
-        password: 'Admin@CMS2024!',
-        name: 'CMS Admin',
-      },
+      data: { email, password, name: 'CMS Admin' },
     })
-    console.log('  Created admin user: admin@cmsgroup.com.np')
+    console.log(`  Created admin user: ${email}`)
   } catch (err) {
     console.error('  [error] Failed to create admin user:', err)
   }

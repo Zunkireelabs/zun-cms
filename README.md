@@ -49,6 +49,8 @@ pnpm seed
 | `REVALIDATE_URL` | URL of the website to revalidate after content changes | No |
 | `REVALIDATE_SECRET` | Shared secret for on-demand revalidation | No |
 | `POSTGRES_PASSWORD` | Password for the production Postgres container | Yes (prod) |
+| `SEED_ADMIN_EMAIL` | Admin email to create when running `pnpm seed` | Yes (seed) |
+| `SEED_ADMIN_PASSWORD` | Admin password to create when running `pnpm seed` | Yes (seed) |
 
 ## Production Deployment (VPS)
 
