@@ -1,9 +1,0 @@
-import React from 'react'
-export const metadata = { title: 'CMS Group CMS' }
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
