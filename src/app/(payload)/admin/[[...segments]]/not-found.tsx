@@ -1,6 +1,5 @@
-import { NotFoundPage } from '@payloadcms/next/views'
-import config from '@payload-config'
+import { redirect } from 'next/navigation'
 
-const NotFound = () => NotFoundPage({ config })
-
-export default NotFound
+export default function NotFound() {
+  redirect('/admin')
+}
