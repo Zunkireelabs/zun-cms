@@ -8,8 +8,8 @@ next-env.d.ts
 
 # Env
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Payload generated
 src/payload-types.ts

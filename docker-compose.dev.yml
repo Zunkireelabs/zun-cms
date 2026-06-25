@@ -1,18 +1,62 @@
-version: '3.8'
-
 services:
+  app:
+    container_name: zun-cms-app-stage
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - hosting
+      - internal
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - media_uploads_stage:/app/public/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hosting"
+      - "traefik.http.routers.zun-cms-app-stage.rule=Host(`dev-admin-cms.zunkireelabs.com`)"
+      - "traefik.http.routers.zun-cms-app-stage.entrypoints=websecure"
+      - "traefik.http.routers.zun-cms-app-stage.tls=true"
+      - "traefik.http.routers.zun-cms-app-stage.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.zun-cms-app-stage-http.rule=Host(`dev-admin-cms.zunkireelabs.com`)"
+      - "traefik.http.routers.zun-cms-app-stage-http.entrypoints=web"
+      - "traefik.http.routers.zun-cms-app-stage-http.middlewares=zun-cms-app-stage-redirect"
+      - "traefik.http.middlewares.zun-cms-app-stage-redirect.redirectscheme.scheme=https"
+      - "traefik.http.services.zun-cms-app-stage.loadbalancer.server.port=3000"
+
   postgres:
     image: postgres:16-alpine
-    container_name: zun-cms-dev-postgres
+    container_name: zun-cms-postgres-stage
     restart: unless-stopped
+    networks:
+      - internal
     environment:
-      - POSTGRES_DB=zun_cms
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: zun_cms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
+      - postgres_data_stage:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_dev_data:
+  postgres_data_stage:
+  media_uploads_stage:
+
+networks:
+  hosting:
+    external: true
+  internal:
+    driver: bridge

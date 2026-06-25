@@ -1,32 +1,48 @@
-version: '3.8'
-
 services:
   app:
-    build: .
-    container_name: zun-cms-app
+    container_name: zun-cms-app-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - hosting
+      - internal
     restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URI=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/zun_cms
-      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
-      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
-      - REVALIDATE_URL=${REVALIDATE_URL:-}
-      - REVALIDATE_SECRET=${REVALIDATE_SECRET:-}
+    env_file: .env
     volumes:
       - media_uploads:/app/public/media
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=hosting"
+      - "traefik.http.routers.zun-cms-app-prod.rule=Host(`admin-cms.zunkireelabs.com`)"
+      - "traefik.http.routers.zun-cms-app-prod.entrypoints=websecure"
+      - "traefik.http.routers.zun-cms-app-prod.tls=true"
+      - "traefik.http.routers.zun-cms-app-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.zun-cms-app-prod-http.rule=Host(`admin-cms.zunkireelabs.com`)"
+      - "traefik.http.routers.zun-cms-app-prod-http.entrypoints=web"
+      - "traefik.http.routers.zun-cms-app-prod-http.middlewares=zun-cms-app-prod-redirect"
+      - "traefik.http.middlewares.zun-cms-app-prod-redirect.redirectscheme.scheme=https"
+      - "traefik.http.services.zun-cms-app-prod.loadbalancer.server.port=3000"
 
   postgres:
     image: postgres:16-alpine
-    container_name: zun-cms-postgres
+    container_name: zun-cms-postgres-prod
     restart: unless-stopped
+    networks:
+      - internal
     environment:
-      - POSTGRES_DB=zun_cms
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB: zun_cms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,3 +54,9 @@ services:
 volumes:
   postgres_data:
   media_uploads:
+
+networks:
+  hosting:
+    external: true
+  internal:
+    driver: bridge
