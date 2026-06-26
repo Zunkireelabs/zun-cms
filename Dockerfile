@@ -17,7 +17,7 @@ ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 ENV DATABASE_URI=${DATABASE_URI}
-CMD ["node", "node_modules/.bin/payload", "migrate"]
+CMD ["node_modules/.bin/payload", "migrate"]
 
 FROM base AS builder
 WORKDIR /app
