@@ -27,8 +27,9 @@ ENV NODE_OPTIONS=--no-deprecation
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+RUN mkdir -p public/media
 COPY --from=builder /app/public ./public
-RUN mkdir -p public/media && chown nextjs:nodejs public/media
+RUN chown -R nextjs:nodejs public/
 RUN mkdir .next && chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
