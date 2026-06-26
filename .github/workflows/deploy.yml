@@ -86,7 +86,7 @@ jobs:
 
       - name: Verify Health
         run: |
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ vars.PROD_DOMAIN }}")
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ vars.PROD_DOMAIN }}/admin")
           if [ "$HTTP_CODE" = "200" ]; then
             echo "Production health check passed (HTTP $HTTP_CODE)"
           else
