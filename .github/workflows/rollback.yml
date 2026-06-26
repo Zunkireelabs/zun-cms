@@ -36,10 +36,10 @@ jobs:
             REPO="${{ github.event.repository.name }}"
 
             if [ "${{ inputs.environment }}" = "production" ]; then
-              DIR="/home/zunkireelabs/devprojects/${REPO}-app-prod"
+              DIR="/root/devprojects/${REPO}-app-prod"
               COMPOSE_FILE="docker-compose.yml"
             else
-              DIR="/home/zunkireelabs/devprojects/${REPO}-app-stage"
+              DIR="/root/devprojects/${REPO}-app-stage"
               COMPOSE_FILE="docker-compose.dev.yml"
             fi
 
