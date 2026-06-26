@@ -87,7 +87,7 @@ async function uploadMedia(
         size: buffer.length,
       },
     })
-    return doc.id
+    return doc.id as number
   } catch (err) {
     console.error(`  [error] Failed to upload ${filename}:`, err)
     errorCount++
@@ -199,7 +199,7 @@ async function seedVentures(
         },
       })
 
-      ventureMap.set(venture.slug, doc.id)
+      ventureMap.set(venture.slug, doc.id as number)
       console.log(`  Created venture: ${venture.name}`)
       created++
     } catch (err) {
@@ -266,7 +266,7 @@ async function seedProductDomains(
         },
       })
 
-      domainMap.set(domain.slug, doc.id)
+      domainMap.set(domain.slug, doc.id as number)
       console.log(`  Created domain: ${domain.title}`)
       created++
     } catch (err) {
