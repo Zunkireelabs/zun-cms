@@ -28,6 +28,9 @@ export default buildConfig({
   admin: {
     user: 'users',
     meta: { titleSuffix: '— CMS Group Admin' },
+    components: {
+      providers: ['/src/admin/PasswordEyeToggle'],
+    },
   },
   editor: lexicalEditor({}),
   collections: [
