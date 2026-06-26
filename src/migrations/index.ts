@@ -1,5 +1,6 @@
 import * as migration_20260626_074238_initial from './20260626_074238_initial';
 import * as migration_20260626_115952_milestones_rich_fields from './20260626_115952_milestones_rich_fields';
+import * as migration_20260626_122531_siteconfig_richer from './20260626_122531_siteconfig_richer';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20260626_115952_milestones_rich_fields.up,
     down: migration_20260626_115952_milestones_rich_fields.down,
-    name: '20260626_115952_milestones_rich_fields'
+    name: '20260626_115952_milestones_rich_fields',
+  },
+  {
+    up: migration_20260626_122531_siteconfig_richer.up,
+    down: migration_20260626_122531_siteconfig_richer.down,
+    name: '20260626_122531_siteconfig_richer'
   },
 ];

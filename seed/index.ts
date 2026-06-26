@@ -760,20 +760,151 @@ async function seedSiteConfig(payload: Awaited<ReturnType<typeof getPayload>>) {
     await payload.updateGlobal({
       slug: 'site-config',
       data: {
-        name: 'Construction Materials Group',
+        name: 'CMS Group',
         shortName: 'CMS Group',
-        legalName: 'Construction Materials Group Pvt. Ltd.',
-        tagline: 'Building Nepal, One Project at a Time',
-        description: "Nepal's leading construction materials trading and contracting group",
-        url: 'https://cms-dev.zunkireelabs.com',
-        phone: '+977-1-4101234',
-        email: 'info@cmsgroup.com.np',
+        legalName: 'Construction Material Solutions',
+        tagline: 'Delivering Exceptional Construction Solutions since 2002',
+        description:
+          "CMS Group is Nepal's leading provider of construction materials and building finishing solutions. Trusted partner since 2002 across hospital, education, airport, office, hotel, and residential projects.",
+        url: 'https://cmsgrps.com',
+        phone: '+977-1-4100235',
+        phoneSecondary: '+977-1-4100236',
+        phoneMobile: '+977-9820271896',
+        email: 'info@cmsgrps.com',
         address: {
-          street: 'Naxal',
+          street: 'Tara Bhawan, Near Teku Hospital (behind Prakash Pharmacia), Teku',
           city: 'Kathmandu',
           country: 'Nepal',
-          postal: '44600',
         },
+        mapsUrl: 'https://maps.google.com/?q=Tara+Bhawan+Teku+Kathmandu+Nepal',
+        social: {
+          instagram: 'https://www.instagram.com/cmsgroup_official',
+          facebook: 'https://www.facebook.com/share/1D22PUVwS5/',
+          tiktok: 'https://www.tiktok.com/@cms.group.official',
+          linkedin: 'https://www.linkedin.com/company/cmsgrp',
+        },
+
+        stats: {
+          projectsDelivered: 500,
+          projectsDeliveredLabel: 'Projects Delivered',
+          yearsOfExcellence: new Date().getFullYear() - 2002,
+          yearsOfExcellenceLabel: 'Years of Experience',
+          brandPartners: 50,
+          brandPartnersLabel: 'Global Brand Partners',
+          sectorsServed: 6,
+          sectorsServedLabel: 'Sectors Served',
+        },
+
+        operatingHours: 'Sun – Thu: 8:00 AM – 5:00 PM',
+        showrooms: [
+          {
+            name: 'TOSTEM Studio Showroom',
+            description:
+              'Kathmandu — experiential studio for TOSTEM aluminium window & door systems (opened June 2023)',
+            address: 'Kathmandu',
+          },
+        ],
+
+        mission: [
+          { point: 'To deliver end-to-end trading and contracting solutions by combining globally recognized products with precise project execution.' },
+          { point: 'To uphold the highest standards of quality, safety, and integrity in every stage of our operations.' },
+          { point: 'To build long-term partnerships with clients, suppliers, and stakeholders through reliability and performance.' },
+        ],
+        vision: [
+          { point: 'To be a trusted and preferred trading and contracting partner, recognized for delivering integrated building solutions with technical excellence, global brand partnerships, and sustainable value across every project we undertake.' },
+        ],
+        trustPillars: [
+          { title: 'Since 2002', description: 'Two decades of trading & contracting in Nepal.' },
+          { title: 'Global Brands', description: 'Authorised partner for 50+ international brands.' },
+          { title: 'Projects Delivered', description: 'Hundreds of completed installations across six sectors.' },
+        ],
+        coreValues: [
+          {
+            icon: 'Shield',
+            title: 'Integrity',
+            description:
+              'Honesty, integrity, and moral behaviour are the cornerstone of our commercial operations — incorporated into every facet of how the organisation operates.',
+            practice: 'Single source-of-truth pricing across all six ventures',
+          },
+          {
+            icon: 'Award',
+            title: 'Excellence',
+            description:
+              'Competitive excellence through high-quality products and services, maintaining worldwide quality standards across every venture in the group.',
+            practice: 'ISO-aligned quality control on every brand we distribute',
+          },
+          {
+            icon: 'Users',
+            title: 'Customer Satisfaction',
+            description:
+              'Customer satisfaction is our top priority — we exceed expectations, cultivate long-term partnerships, and constantly improve services for clients at every level.',
+            practice: 'Dedicated account manager assigned to every active project',
+          },
+          {
+            icon: 'TrendingUp',
+            title: 'Innovation',
+            description:
+              'We foster growth through creativity and innovation, continuously seeking new ideas, technologies, and techniques that drive progress and add client value.',
+            practice: 'Annual factory visits with international brand partners',
+          },
+          {
+            icon: 'Handshake',
+            title: 'Trust & Partnership',
+            description:
+              'Strong, long-lasting partnerships are the keystone of our business. We earn trust by keeping commitments and exceeding expectations.',
+            practice: '55+ brand partnerships maintained over two decades',
+          },
+          {
+            icon: 'CheckCircle',
+            title: 'Sustainability',
+            description:
+              'We actively engage in sourcing materials from sustainable and eco-friendly sources, aligning operations with responsible practices and contributing to a greener future.',
+            practice: 'Eco-friendly material sourcing across all six ventures',
+          },
+        ],
+        storyMeta: [
+          { label: 'Founded', value: '2002' },
+          { label: 'Head Office', value: 'Kathmandu' },
+        ],
+        storySectors: [
+          { name: 'Hospitality' },
+          { name: 'Education' },
+          { name: 'Airport' },
+          { name: 'Office Spaces' },
+          { name: 'Healthcare' },
+          { name: 'Residence' },
+        ],
+
+        whyWorkWithUs: [
+          { icon: 'Award', title: 'Global Exposure', description: 'Work directly with 50+ international brand partners and attend factory visits.' },
+          { icon: 'TrendingUp', title: 'Growth Path', description: 'Clear career ladders across trading, contracting, and ventures.' },
+          { icon: 'Users', title: 'Collaborative Culture', description: 'Six ventures, one team — cross-functional projects every quarter.' },
+        ],
+        employeeStories: [
+          { name: 'Anita K.', role: 'Project Manager', tenure: '7 years', quote: 'The variety of projects — from airports to private villas — keeps every day different.' },
+          { name: 'Rajesh M.', role: 'Sales Engineer', tenure: '4 years', quote: 'Brand training programmes here are top-notch; I have visited factories in three countries.' },
+        ],
+
+        contractingServices: [
+          {
+            icon: 'Hammer',
+            title: 'Interior Contracting & Fit-Out',
+            description:
+              'End-to-end interior fit-out for commercial, hospitality, and institutional projects — flooring, ceiling, partitions, doors, hardware, sanitaryware, and bespoke finishes.',
+          },
+          {
+            icon: 'Building2',
+            title: 'Project Execution & Management',
+            description:
+              'Globally trained installers, structured project management, and stringent quality control. We deliver on time and to specification, from material procurement through commissioning.',
+          },
+          {
+            icon: 'Sparkles',
+            title: 'Renovation & Sustainable Solutions',
+            description:
+              'Renovation contracting that brings ageing assets up to current codes, with eco-friendly material sourcing and energy-efficient systems aligned to green-building standards.',
+          },
+        ],
       },
     })
     console.log('  SiteConfig updated')
