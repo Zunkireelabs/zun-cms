@@ -70,7 +70,7 @@ async function uploadMedia(
     limit: 1,
   })
   if (existing.docs.length > 0) {
-    return existing.docs[0].id
+    return existing.docs[0].id as number
   }
 
   const buffer = fs.readFileSync(fullPath)
@@ -171,7 +171,7 @@ async function seedVentures(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${venture.slug}`)
-        ventureMap.set(venture.slug, existing.docs[0].id)
+        ventureMap.set(venture.slug, existing.docs[0].id as number)
         skipped++
         continue
       }
@@ -233,7 +233,7 @@ async function seedProductDomains(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${domain.slug}`)
-        domainMap.set(domain.slug, existing.docs[0].id)
+        domainMap.set(domain.slug, existing.docs[0].id as number)
         skipped++
         continue
       }
