@@ -16,6 +16,32 @@ services:
         condition: service_healthy
     restart: "no"
 
+  # One-shot service for importing initial content. Not started by
+  # `docker compose up` (gated by `profiles: [seed]`); invoke explicitly:
+  #   docker compose --profile seed run --rm seed
+  # Mounts the same media_uploads volume as the app so uploaded files
+  # land where the app will serve them from.
+  seed:
+    container_name: zun-cms-seed-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: seeder
+      args:
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+        DATABASE_URI: ${DATABASE_URI}
+    env_file: .env
+    networks:
+      - internal
+    volumes:
+      - media_uploads:/app/public/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - seed
+    restart: "no"
+
   app:
     container_name: zun-cms-app-prod
     build:

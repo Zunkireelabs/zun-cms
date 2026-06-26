@@ -19,3 +19,5 @@ public/media/
 
 # Misc
 .DS_Store
+.vscode/
+.seed-report.md

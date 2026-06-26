@@ -10,18 +10,18 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Source data
-import { VENTURES } from './sources/ventures'
-import { SECTORS } from './sources/sectors'
-import { BRANDS } from './sources/brands'
-import { PRODUCT_DOMAIN_META } from './sources/products'
-import { PROJECTS } from './sources/projects'
-import { LEADERSHIP } from './sources/leadership'
-import { TESTIMONIALS } from './sources/testimonials'
-import { EVENTS } from './sources/events'
-import { CERTIFICATIONS } from './sources/certifications'
-import { MILESTONES } from './sources/milestones'
+import { VENTURES } from './sources/ventures.js'
+import { SECTORS } from './sources/sectors.js'
+import { BRANDS } from './sources/brands.js'
+import { PRODUCT_DOMAIN_META } from './sources/products.js'
+import { PROJECTS } from './sources/projects.js'
+import { LEADERSHIP } from './sources/leadership.js'
+import { TESTIMONIALS } from './sources/testimonials.js'
+import { EVENTS } from './sources/events.js'
+import { CERTIFICATIONS } from './sources/certifications.js'
+import { MILESTONES } from './sources/milestones.js'
 
-const IMAGES_DIR = path.resolve(__dirname, '../../cms-web-dev/public/images')
+const IMAGES_DIR = path.resolve(__dirname, 'sources/images')
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -47,11 +47,14 @@ function getMimeType(filePath: string): string {
   return 'image/jpeg'
 }
 
+// Track errors across all phases
+let errorCount = 0
+
 async function uploadMedia(
   payload: Awaited<ReturnType<typeof getPayload>>,
   imagePath: string, // e.g. '/images/projects/bir-hospital.jpg'
   alt: string,
-): Promise<string | null> {
+): Promise<number | null> {
   const fullPath = path.join(IMAGES_DIR, imagePath.replace('/images/', ''))
   if (!fs.existsSync(fullPath)) {
     console.log(`  [skip] Image not found: ${fullPath}`)
@@ -67,7 +70,7 @@ async function uploadMedia(
     limit: 1,
   })
   if (existing.docs.length > 0) {
-    return existing.docs[0].id as string
+    return existing.docs[0].id
   }
 
   const buffer = fs.readFileSync(fullPath)
@@ -84,9 +87,10 @@ async function uploadMedia(
         size: buffer.length,
       },
     })
-    return doc.id as string
+    return doc.id
   } catch (err) {
     console.error(`  [error] Failed to upload ${filename}:`, err)
+    errorCount++
     return null
   }
 }
@@ -108,11 +112,12 @@ async function seedAdminUser(payload: Awaited<ReturnType<typeof getPayload>>) {
     }
     await payload.create({
       collection: 'users',
-      data: { email, password, name: 'CMS Admin' },
+      data: { email, password },
     })
     console.log(`  Created admin user: ${email}`)
   } catch (err) {
     console.error('  [error] Failed to create admin user:', err)
+    errorCount++
   }
 }
 
@@ -120,9 +125,9 @@ async function seedAdminUser(payload: Awaited<ReturnType<typeof getPayload>>) {
 
 async function seedMedia(
   payload: Awaited<ReturnType<typeof getPayload>>,
-): Promise<Map<string, string>> {
+): Promise<Map<string, number>> {
   console.log('\nUploading media files...')
-  const map = new Map<string, string>()
+  const map = new Map<string, number>()
   const imageFiles = walkDir(IMAGES_DIR)
 
   if (imageFiles.length === 0) {
@@ -136,7 +141,7 @@ async function seedMedia(
     const relPath = '/images/' + path.relative(IMAGES_DIR, fullPath)
     const altName = path.basename(fullPath, path.extname(fullPath))
     const mediaId = await uploadMedia(payload, relPath, altName)
-    if (mediaId) {
+    if (mediaId !== null) {
       map.set(relPath, mediaId)
     }
   }
@@ -149,10 +154,12 @@ async function seedMedia(
 
 async function seedVentures(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
-): Promise<Map<string, string>> {
+  mediaMap: Map<string, number>,
+): Promise<Map<string, number>> {
   console.log('\nSeeding ventures...')
-  const ventureMap = new Map<string, string>()
+  const ventureMap = new Map<string, number>()
+  let created = 0
+  let skipped = 0
 
   for (const venture of VENTURES) {
     try {
@@ -164,16 +171,17 @@ async function seedVentures(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${venture.slug}`)
-        ventureMap.set(venture.slug, existing.docs[0].id as string)
+        ventureMap.set(venture.slug, existing.docs[0].id)
+        skipped++
         continue
       }
 
       // Resolve products with images
       const products = venture.products.map((p) => {
-        const result: { name: string; image?: string } = { name: p.name }
+        const result: { name: string; image?: number } = { name: p.name }
         if (p.image) {
           const mediaId = mediaMap.get(p.image)
-          if (mediaId) result.image = mediaId
+          if (mediaId !== undefined) result.image = mediaId
         }
         return result
       })
@@ -191,13 +199,16 @@ async function seedVentures(
         },
       })
 
-      ventureMap.set(venture.slug, doc.id as string)
+      ventureMap.set(venture.slug, doc.id)
       console.log(`  Created venture: ${venture.name}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create venture ${venture.slug}:`, err)
+      errorCount++
     }
   }
 
+  console.log(`  ✓ ventures: ${created} created, ${skipped} skipped`)
   return ventureMap
 }
 
@@ -205,10 +216,12 @@ async function seedVentures(
 
 async function seedProductDomains(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
-): Promise<Map<string, string>> {
+  mediaMap: Map<string, number>,
+): Promise<Map<string, number>> {
   console.log('\nSeeding product domains...')
-  const domainMap = new Map<string, string>()
+  const domainMap = new Map<string, number>()
+  let created = 0
+  let skipped = 0
 
   for (const domain of PRODUCT_DOMAIN_META) {
     try {
@@ -220,19 +233,20 @@ async function seedProductDomains(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${domain.slug}`)
-        domainMap.set(domain.slug, existing.docs[0].id as string)
+        domainMap.set(domain.slug, existing.docs[0].id)
+        skipped++
         continue
       }
 
       // Resolve image
-      let imageId: string | undefined = undefined
+      let imageId: number | undefined = undefined
       let externalImageUrl: string | undefined = undefined
 
       if (domain.image.startsWith('http')) {
         externalImageUrl = domain.image
       } else {
         const mediaId = mediaMap.get(domain.image)
-        if (mediaId) imageId = mediaId
+        if (mediaId !== undefined) imageId = mediaId
       }
 
       const projectKeywords = domain.projectKeywords
@@ -245,20 +259,23 @@ async function seedProductDomains(
           slug: domain.slug,
           title: domain.title,
           description: domain.description,
-          ...(imageId ? { image: imageId } : {}),
+          ...(imageId !== undefined ? { image: imageId } : {}),
           ...(externalImageUrl ? { externalImageUrl } : {}),
           ...(domain.imagePosition ? { imagePosition: domain.imagePosition } : {}),
           ...(projectKeywords ? { projectKeywords } : {}),
         },
       })
 
-      domainMap.set(domain.slug, doc.id as string)
+      domainMap.set(domain.slug, doc.id)
       console.log(`  Created domain: ${domain.title}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create domain ${domain.slug}:`, err)
+      errorCount++
     }
   }
 
+  console.log(`  ✓ product-domains: ${created} created, ${skipped} skipped`)
   return domainMap
 }
 
@@ -266,6 +283,8 @@ async function seedProductDomains(
 
 async function seedSectors(payload: Awaited<ReturnType<typeof getPayload>>) {
   console.log('\nSeeding sectors...')
+  let created = 0
+  let skipped = 0
 
   for (const sector of SECTORS) {
     try {
@@ -277,6 +296,7 @@ async function seedSectors(payload: Awaited<ReturnType<typeof getPayload>>) {
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${sector.slug}`)
+        skipped++
         continue
       }
 
@@ -291,19 +311,25 @@ async function seedSectors(payload: Awaited<ReturnType<typeof getPayload>>) {
         },
       })
       console.log(`  Created sector: ${sector.name}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create sector ${sector.slug}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ sectors: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 6: Leadership ─────────────────────────────────────────────────────
 
 async function seedLeadership(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
+  mediaMap: Map<string, number>,
 ) {
   console.log('\nSeeding leadership...')
+  let created = 0
+  let skipped = 0
 
   for (const person of LEADERSHIP) {
     try {
@@ -316,13 +342,14 @@ async function seedLeadership(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${person.name}`)
+        skipped++
         continue
       }
 
-      let photoId: string | undefined = undefined
+      let photoId: number | undefined = undefined
       if (person.photo) {
         const mediaId = mediaMap.get(person.photo)
-        if (mediaId) photoId = mediaId
+        if (mediaId !== undefined) photoId = mediaId
       }
 
       await payload.create({
@@ -334,23 +361,29 @@ async function seedLeadership(
           bio: person.bio,
           summary: person.summary,
           order: person.order,
-          ...(photoId ? { photo: photoId } : {}),
+          ...(photoId !== undefined ? { photo: photoId } : {}),
         },
       })
       console.log(`  Created leader: ${person.name}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create leader ${person.name}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ leadership: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 7: Events ─────────────────────────────────────────────────────────
 
 async function seedEvents(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
+  mediaMap: Map<string, number>,
 ) {
   console.log('\nSeeding events...')
+  let created = 0
+  let skipped = 0
 
   for (const event of EVENTS) {
     try {
@@ -362,13 +395,14 @@ async function seedEvents(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${event.id}`)
+        skipped++
         continue
       }
 
-      let imageId: string | undefined = undefined
+      let imageId: number | undefined = undefined
       if (event.image) {
         const mediaId = mediaMap.get(event.image)
-        if (mediaId) imageId = mediaId
+        if (mediaId !== undefined) imageId = mediaId
       }
 
       await payload.create({
@@ -382,27 +416,33 @@ async function seedEvents(
           category: event.category,
           description: event.description,
           featured: event.featured ?? false,
-          ...(imageId ? { image: imageId } : {}),
+          ...(imageId !== undefined ? { image: imageId } : {}),
         },
       })
       console.log(`  Created event: ${event.title}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create event ${event.id}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ events: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 8: Certifications ─────────────────────────────────────────────────
 
 async function seedCertifications(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
+  mediaMap: Map<string, number>,
 ) {
   console.log('\nSeeding certifications...')
+  let created = 0
+  let skipped = 0
 
   for (const cert of CERTIFICATIONS) {
     try {
-      // Check by id used as a unique key via brand+type combo
+      // Check by brand+type as unique key
       const existing = await payload.find({
         collection: 'certifications',
         where: {
@@ -416,13 +456,14 @@ async function seedCertifications(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${cert.brand} — ${cert.type}`)
+        skipped++
         continue
       }
 
-      let scanImageId: string | undefined = undefined
+      let scanImageId: number | undefined = undefined
       if (cert.scanImage) {
         const mediaId = mediaMap.get(cert.scanImage)
-        if (mediaId) scanImageId = mediaId
+        if (mediaId !== undefined) scanImageId = mediaId
       }
 
       await payload.create({
@@ -437,20 +478,26 @@ async function seedCertifications(
           issued: cert.issued,
           validFrom: cert.validFrom,
           validUntil: cert.validUntil,
-          ...(scanImageId ? { scanImage: scanImageId } : {}),
+          ...(scanImageId !== undefined ? { scanImage: scanImageId } : {}),
         },
       })
       console.log(`  Created cert: ${cert.brand}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create cert ${cert.id}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ certifications: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 9: Milestones ─────────────────────────────────────────────────────
 
 async function seedMilestones(payload: Awaited<ReturnType<typeof getPayload>>) {
   console.log('\nSeeding milestones...')
+  let created = 0
+  let skipped = 0
 
   for (const milestone of MILESTONES) {
     try {
@@ -468,6 +515,7 @@ async function seedMilestones(payload: Awaited<ReturnType<typeof getPayload>>) {
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${milestone.year} — ${milestone.venture}`)
+        skipped++
         continue
       }
 
@@ -480,21 +528,27 @@ async function seedMilestones(payload: Awaited<ReturnType<typeof getPayload>>) {
         },
       })
       console.log(`  Created milestone: ${milestone.year} — ${milestone.venture}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create milestone ${milestone.year}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ milestones: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 10: Brands ────────────────────────────────────────────────────────
 
 async function seedBrands(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
-  ventureMap: Map<string, string>,
-  domainMap: Map<string, string>,
+  mediaMap: Map<string, number>,
+  ventureMap: Map<string, number>,
+  domainMap: Map<string, number>,
 ) {
   console.log('\nSeeding brands...')
+  let created = 0
+  let skipped = 0
 
   for (const brand of BRANDS) {
     try {
@@ -506,31 +560,33 @@ async function seedBrands(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${brand.slug}`)
+        skipped++
         continue
       }
 
       // Resolve venture
       const ventureId = ventureMap.get(brand.venture)
-      if (!ventureId) {
+      if (ventureId === undefined) {
         console.error(`  [error] Venture not found for brand ${brand.slug}: ${brand.venture}`)
+        errorCount++
         continue
       }
 
       // Resolve trading domains
-      const tradingDomainIds: string[] = []
+      const tradingDomainIds: number[] = []
       if (brand.tradingDomains) {
         for (const domainSlug of brand.tradingDomains) {
           const domainId = domainMap.get(domainSlug)
-          if (domainId) tradingDomainIds.push(domainId)
+          if (domainId !== undefined) tradingDomainIds.push(domainId)
           else console.log(`  [warn] Domain not found: ${domainSlug} for brand ${brand.slug}`)
         }
       }
 
       // Resolve logo
-      let logoId: string | undefined = undefined
+      let logoId: number | undefined = undefined
       if (brand.logoUrl) {
         const mediaId = mediaMap.get(brand.logoUrl)
-        if (mediaId) logoId = mediaId
+        if (mediaId !== undefined) logoId = mediaId
       }
 
       // Segments as array fields
@@ -548,23 +604,29 @@ async function seedBrands(
           website: brand.website,
           venture: ventureId,
           ...(tradingDomainIds.length > 0 ? { tradingDomains: tradingDomainIds } : {}),
-          ...(logoId ? { logo: logoId } : {}),
+          ...(logoId !== undefined ? { logo: logoId } : {}),
         },
       })
       console.log(`  Created brand: ${brand.name}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create brand ${brand.slug}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ brands: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 11: Projects ──────────────────────────────────────────────────────
 
 async function seedProjects(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
+  mediaMap: Map<string, number>,
 ) {
   console.log('\nSeeding projects...')
+  let created = 0
+  let skipped = 0
 
   for (const project of PROJECTS) {
     try {
@@ -576,13 +638,14 @@ async function seedProjects(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${project.id}`)
+        skipped++
         continue
       }
 
-      let imageId: string | undefined = undefined
+      let imageId: number | undefined = undefined
       if (project.image) {
         const mediaId = mediaMap.get(project.image)
-        if (mediaId) imageId = mediaId
+        if (mediaId !== undefined) imageId = mediaId
       }
 
       const scope = project.scope.map((s) => ({ value: s }))
@@ -601,23 +664,29 @@ async function seedProjects(
           scope,
           area: project.area,
           featured: project.featured ?? false,
-          ...(imageId ? { image: imageId } : {}),
+          ...(imageId !== undefined ? { image: imageId } : {}),
         },
       })
       console.log(`  Created project: ${project.title}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create project ${project.id}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ projects: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 12: Testimonials ──────────────────────────────────────────────────
 
 async function seedTestimonials(
   payload: Awaited<ReturnType<typeof getPayload>>,
-  mediaMap: Map<string, string>,
+  mediaMap: Map<string, number>,
 ) {
   console.log('\nSeeding testimonials...')
+  let created = 0
+  let skipped = 0
 
   for (const testimonial of TESTIMONIALS) {
     try {
@@ -635,13 +704,14 @@ async function seedTestimonials(
 
       if (existing.docs.length > 0) {
         console.log(`  [skip] ${testimonial.id}`)
+        skipped++
         continue
       }
 
-      let scanImageId: string | undefined = undefined
+      let scanImageId: number | undefined = undefined
       if (testimonial.scanImage) {
         const mediaId = mediaMap.get(testimonial.scanImage)
-        if (mediaId) scanImageId = mediaId
+        if (mediaId !== undefined) scanImageId = mediaId
       }
 
       const scope = testimonial.scope.map((s) => ({ value: s }))
@@ -657,14 +727,18 @@ async function seedTestimonials(
           scope,
           project: testimonial.project,
           location: testimonial.location,
-          ...(scanImageId ? { scanImage: scanImageId } : {}),
+          ...(scanImageId !== undefined ? { scanImage: scanImageId } : {}),
         },
       })
       console.log(`  Created testimonial: ${testimonial.id}`)
+      created++
     } catch (err) {
       console.error(`  [error] Failed to create testimonial ${testimonial.id}:`, err)
+      errorCount++
     }
   }
+
+  console.log(`  ✓ testimonials: ${created} created, ${skipped} skipped`)
 }
 
 // ─── Step 13: SiteConfig global ─────────────────────────────────────────────
@@ -694,6 +768,7 @@ async function seedSiteConfig(payload: Awaited<ReturnType<typeof getPayload>>) {
     console.log('  SiteConfig updated')
   } catch (err) {
     console.error('  [error] Failed to update SiteConfig:', err)
+    errorCount++
   }
 }
 
@@ -712,37 +787,37 @@ async function seed() {
   // Step 2: Media upload
   const mediaMap = await seedMedia(payload)
 
-  // Step 3: Ventures
+  // Step 3: Ventures (Pass 1 — no deps)
   const ventureMap = await seedVentures(payload, mediaMap)
 
-  // Step 4: Product domains
+  // Step 4: Product domains (Pass 1 — no deps)
   const domainMap = await seedProductDomains(payload, mediaMap)
 
-  // Step 5: Sectors
+  // Step 5: Sectors (Pass 1 — no deps)
   await seedSectors(payload)
 
-  // Step 6: Leadership
+  // Step 6: Leadership (Pass 1 — no deps)
   await seedLeadership(payload, mediaMap)
 
-  // Step 7: Events
+  // Step 7: Events (Pass 1 — no deps)
   await seedEvents(payload, mediaMap)
 
-  // Step 8: Certifications
+  // Step 8: Certifications (Pass 1 — no deps)
   await seedCertifications(payload, mediaMap)
 
-  // Step 9: Milestones
+  // Step 9: Milestones (Pass 1 — no deps)
   await seedMilestones(payload)
 
-  // Step 10: Brands (depends on ventures + domains)
+  // Step 10: Brands (Pass 2 — depends on ventures + domains)
   await seedBrands(payload, mediaMap, ventureMap, domainMap)
 
-  // Step 11: Projects
+  // Step 11: Projects (Pass 3 — depends on media only; sector is a select string)
   await seedProjects(payload, mediaMap)
 
-  // Step 12: Testimonials
+  // Step 12: Testimonials (Pass 3 — depends on media only)
   await seedTestimonials(payload, mediaMap)
 
-  // Step 13: SiteConfig
+  // Step 13: SiteConfig global
   await seedSiteConfig(payload)
 
   // Print summary
@@ -774,8 +849,13 @@ async function seed() {
   console.log(`  media:           ${counts[10].totalDocs}`)
   console.log('==================================')
 
-  console.log('\nSeed complete!')
-  process.exit(0)
+  if (errorCount > 0) {
+    console.error(`\nSeed completed with ${errorCount} error(s). Check logs above.`)
+    process.exit(1)
+  } else {
+    console.log('\nSeed complete!')
+    process.exit(0)
+  }
 }
 
 seed().catch((err) => {
