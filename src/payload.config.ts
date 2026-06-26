@@ -17,6 +17,8 @@ import { Testimonials } from './collections/Testimonials'
 import { Events } from './collections/Events'
 import { Certifications } from './collections/Certifications'
 import { Milestones } from './collections/Milestones'
+import { HeroSlides } from './collections/HeroSlides'
+import { Jobs } from './collections/Jobs'
 
 // Globals
 import { SiteConfig } from './globals/SiteConfig'
@@ -46,6 +48,8 @@ export default buildConfig({
     Events,
     Certifications,
     Milestones,
+    HeroSlides,
+    Jobs,
   ],
   globals: [SiteConfig],
   secret: (() => {

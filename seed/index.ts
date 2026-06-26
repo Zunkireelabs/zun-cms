@@ -752,6 +752,170 @@ async function seedTestimonials(
   console.log(`  ✓ testimonials: ${created} created, ${skipped} skipped`)
 }
 
+// ─── Step 14: HeroSlides collection ─────────────────────────────────────────
+
+const HERO_SLIDE_SOURCES = [
+  {
+    order: 1,
+    title: 'Trading & Contracting Since 2002',
+    alt: 'CMS Group projects across Nepal',
+    image: '/images/projects/icimod.jpg',
+  },
+  {
+    order: 2,
+    title: 'Hospital & Healthcare',
+    alt: 'Hospital and healthcare projects',
+    image: '/images/projects/grande-hospital.jpg',
+  },
+  {
+    order: 3,
+    title: 'Hotel & Hospitality',
+    alt: 'Hotel and hospitality projects',
+    image: '/images/projects/tiger-palace.jpg',
+  },
+  {
+    order: 4,
+    title: 'Office & Commercial',
+    alt: 'Office and commercial projects',
+    image: '/images/projects/ncell-hq.jpg',
+  },
+] as const
+
+async function seedHeroSlides(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  mediaMap: Map<string, number>,
+) {
+  console.log('\nSeeding hero slides...')
+  let created = 0
+  let updated = 0
+  for (const slide of HERO_SLIDE_SOURCES) {
+    try {
+      const imageId = mediaMap.get(slide.image) ?? null
+      const existing = await payload.find({
+        collection: 'hero-slides',
+        where: { order: { equals: slide.order } },
+        limit: 1,
+      })
+      const data = {
+        order: slide.order,
+        title: slide.title,
+        alt: slide.alt,
+        image: imageId,
+      }
+      if (existing.docs.length > 0) {
+        await payload.update({
+          collection: 'hero-slides',
+          id: existing.docs[0].id,
+          data,
+        })
+        console.log(`  Updated hero slide: ${slide.order} — ${slide.title}`)
+        updated++
+        continue
+      }
+      await payload.create({ collection: 'hero-slides', data })
+      console.log(`  Created hero slide: ${slide.order} — ${slide.title}`)
+      created++
+    } catch (err) {
+      console.error(`  [error] Failed to upsert hero slide ${slide.order}:`, err)
+      errorCount++
+    }
+  }
+  console.log(`  ✓ hero-slides: ${created} created, ${updated} updated`)
+}
+
+// ─── Step 15: Jobs collection ───────────────────────────────────────────────
+
+const JOB_SOURCES = [
+  { title: 'Senior Marketing Manager', slug: 'senior-marketing-manager', location: 'Kathmandu, Nepal', type: 'full-time', description: 'Lead marketing strategy and brand development across CMS Group divisions — driving awareness, client engagement, and business growth through integrated campaigns.' },
+  { title: 'Site Supervisor', slug: 'site-supervisor', location: 'Kathmandu, Nepal', type: 'full-time', description: 'Oversee on-site execution of construction and interior fit-out projects from material delivery through commissioning, ensuring quality and timeline adherence.' },
+  { title: 'Sales Executive', slug: 'sales-executive', location: 'Kathmandu, Nepal', type: 'full-time', description: 'Build and manage client relationships across residential, commercial, and institutional projects — representing premium international brands and delivering tailored solutions.' },
+  { title: 'Marketing Executive', slug: 'marketing-executive', location: 'Kathmandu, Nepal', type: 'full-time', description: "Support marketing initiatives across digital and traditional channels — coordinating campaigns, events, and brand communications to strengthen CMS Group's market presence." },
+  { title: 'Project Manager', slug: 'project-manager', location: 'Kathmandu, Nepal', type: 'full-time', description: 'Plan, coordinate, and deliver projects on time and within budget — managing cross-functional teams, contractors, and stakeholder communications from inception to handover.' },
+  { title: 'Admin Executive', slug: 'admin-executive', location: 'Kathmandu, Nepal', type: 'full-time', description: 'Provide operational and administrative support across departments — managing documentation, scheduling, vendor coordination, and day-to-day office functions.' },
+] as const
+
+async function seedJobs(payload: Awaited<ReturnType<typeof getPayload>>) {
+  console.log('\nSeeding jobs...')
+  let created = 0
+  let updated = 0
+  const postedAt = new Date().toISOString()
+  for (const job of JOB_SOURCES) {
+    try {
+      const existing = await payload.find({
+        collection: 'jobs',
+        where: { slug: { equals: job.slug } },
+        limit: 1,
+      })
+      const data = {
+        title: job.title,
+        slug: job.slug,
+        location: job.location,
+        type: job.type,
+        description: job.description,
+        postedAt,
+        active: true,
+      }
+      if (existing.docs.length > 0) {
+        await payload.update({
+          collection: 'jobs',
+          id: existing.docs[0].id,
+          data,
+        })
+        console.log(`  Updated job: ${job.title}`)
+        updated++
+        continue
+      }
+      await payload.create({ collection: 'jobs', data })
+      console.log(`  Created job: ${job.title}`)
+      created++
+    } catch (err) {
+      console.error(`  [error] Failed to upsert job ${job.slug}:`, err)
+      errorCount++
+    }
+  }
+  console.log(`  ✓ jobs: ${created} created, ${updated} updated`)
+}
+
+// ─── Step 16: Backfill product-domain metrics ───────────────────────────────
+
+const DOMAIN_METRIC_SOURCES: { slug: string; installedAreaSqFt: number; metricLabel: string }[] = [
+  { slug: 'ceiling-systems', installedAreaSqFt: 200000, metricLabel: 'False Ceiling Installed' },
+  { slug: 'roofing-systems', installedAreaSqFt: 300000, metricLabel: 'Roofing Installed' },
+  { slug: 'aluminum-doors-windows', installedAreaSqFt: 90000, metricLabel: 'Aluminium Doors & Windows' },
+  { slug: 'flooring', installedAreaSqFt: 250000, metricLabel: 'Flooring Installed' },
+]
+
+async function backfillProductDomainMetrics(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+) {
+  console.log('\nBackfilling product-domain metrics...')
+  let updated = 0
+  for (const m of DOMAIN_METRIC_SOURCES) {
+    try {
+      const existing = await payload.find({
+        collection: 'product-domains',
+        where: { slug: { equals: m.slug } },
+        limit: 1,
+      })
+      if (existing.docs.length === 0) {
+        console.log(`  [skip] no product-domain with slug ${m.slug}`)
+        continue
+      }
+      await payload.update({
+        collection: 'product-domains',
+        id: existing.docs[0].id,
+        data: { installedAreaSqFt: m.installedAreaSqFt, metricLabel: m.metricLabel },
+      })
+      console.log(`  Updated metrics on: ${m.slug}`)
+      updated++
+    } catch (err) {
+      console.error(`  [error] Failed to backfill metrics for ${m.slug}:`, err)
+      errorCount++
+    }
+  }
+  console.log(`  ✓ product-domain metrics: ${updated} updated`)
+}
+
 // ─── Step 13: SiteConfig global ─────────────────────────────────────────────
 
 async function seedSiteConfig(payload: Awaited<ReturnType<typeof getPayload>>) {
@@ -962,6 +1126,15 @@ async function seed() {
   // Step 13: SiteConfig global
   await seedSiteConfig(payload)
 
+  // Step 14: HeroSlides (uses already-uploaded media)
+  await seedHeroSlides(payload, mediaMap)
+
+  // Step 15: Jobs
+  await seedJobs(payload)
+
+  // Step 16: Backfill product-domain metrics
+  await backfillProductDomainMetrics(payload)
+
   // Print summary
   console.log('\n========== Seed Summary ==========')
   const counts = await Promise.all([
@@ -976,6 +1149,8 @@ async function seed() {
     payload.find({ collection: 'certifications', limit: 0 }),
     payload.find({ collection: 'milestones', limit: 0 }),
     payload.find({ collection: 'media', limit: 0 }),
+    payload.find({ collection: 'hero-slides', limit: 0 }),
+    payload.find({ collection: 'jobs', limit: 0 }),
   ])
 
   console.log(`  ventures:        ${counts[0].totalDocs}`)
@@ -989,6 +1164,8 @@ async function seed() {
   console.log(`  certifications:  ${counts[8].totalDocs}`)
   console.log(`  milestones:      ${counts[9].totalDocs}`)
   console.log(`  media:           ${counts[10].totalDocs}`)
+  console.log(`  hero-slides:     ${counts[11].totalDocs}`)
+  console.log(`  jobs:            ${counts[12].totalDocs}`)
   console.log('==================================')
 
   if (errorCount > 0) {

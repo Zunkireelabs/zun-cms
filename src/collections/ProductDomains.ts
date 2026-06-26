@@ -35,5 +35,23 @@ export const ProductDomains: CollectionConfig = {
         { name: 'value', type: 'text', required: true },
       ],
     },
+
+    // Drives the Domain Metrics strip on the home page.
+    {
+      name: 'installedAreaSqFt',
+      type: 'number',
+      admin: {
+        description:
+          'Marketing metric — square feet installed across this domain. Used on the home page Domain Metrics strip. Leave blank to hide.',
+      },
+    },
+    {
+      name: 'metricLabel',
+      type: 'text',
+      admin: {
+        description:
+          'Label shown next to the metric (e.g. "False Ceiling Installed", "Roofing Installed").',
+      },
+    },
   ],
 }
