@@ -12,6 +12,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
+ARG PAYLOAD_SECRET
+ARG DATABASE_URI
+ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
+ENV DATABASE_URI=${DATABASE_URI}
 RUN corepack enable pnpm && pnpm run build
 
 FROM base AS runner
