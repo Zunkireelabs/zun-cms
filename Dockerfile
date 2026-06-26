@@ -18,7 +18,7 @@ ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 ENV DATABASE_URI=${DATABASE_URI}
-CMD ["node_modules/.bin/payload", "migrate"]
+CMD ["node_modules/.bin/payload", "migrate", "--force-accept-warning"]
 
 # Seeder stage — one-shot import of initial content; invoked manually
 FROM base AS seeder
