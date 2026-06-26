@@ -59,5 +59,6 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI ?? 'postgresql://postgres:postgres@localhost:5432/zun_cms',
     },
+    push: true,
   }),
 })
