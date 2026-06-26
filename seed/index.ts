@@ -497,11 +497,12 @@ async function seedCertifications(
 async function seedMilestones(payload: Awaited<ReturnType<typeof getPayload>>) {
   console.log('\nSeeding milestones...')
   let created = 0
-  let skipped = 0
+  let updated = 0
 
   for (const milestone of MILESTONES) {
     try {
-      // Check by year+venture
+      // Match existing rows by year + venture so subsequent seed runs upgrade
+      // the row in place rather than skipping or duplicating.
       const existing = await payload.find({
         collection: 'milestones',
         where: {
@@ -513,29 +514,39 @@ async function seedMilestones(payload: Awaited<ReturnType<typeof getPayload>>) {
         limit: 1,
       })
 
+      const data = {
+        year: milestone.year,
+        venture: milestone.venture,
+        title: milestone.title,
+        description: milestone.description,
+        icon: milestone.icon,
+        brands: milestone.brands.map((name) => ({ name })),
+      }
+
       if (existing.docs.length > 0) {
-        console.log(`  [skip] ${milestone.year} — ${milestone.venture}`)
-        skipped++
+        await payload.update({
+          collection: 'milestones',
+          id: existing.docs[0].id,
+          data,
+        })
+        console.log(`  Updated milestone: ${milestone.year} — ${milestone.venture}`)
+        updated++
         continue
       }
 
       await payload.create({
         collection: 'milestones',
-        data: {
-          year: milestone.year,
-          venture: milestone.venture,
-          description: milestone.description,
-        },
+        data,
       })
       console.log(`  Created milestone: ${milestone.year} — ${milestone.venture}`)
       created++
     } catch (err) {
-      console.error(`  [error] Failed to create milestone ${milestone.year}:`, err)
+      console.error(`  [error] Failed to upsert milestone ${milestone.year}:`, err)
       errorCount++
     }
   }
 
-  console.log(`  ✓ milestones: ${created} created, ${skipped} skipped`)
+  console.log(`  ✓ milestones: ${created} created, ${updated} updated`)
 }
 
 // ─── Step 10: Brands ────────────────────────────────────────────────────────

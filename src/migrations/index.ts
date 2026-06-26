@@ -1,9 +1,15 @@
 import * as migration_20260626_074238_initial from './20260626_074238_initial';
+import * as migration_20260626_115952_milestones_rich_fields from './20260626_115952_milestones_rich_fields';
 
 export const migrations = [
   {
     up: migration_20260626_074238_initial.up,
     down: migration_20260626_074238_initial.down,
-    name: '20260626_074238_initial'
+    name: '20260626_074238_initial',
+  },
+  {
+    up: migration_20260626_115952_milestones_rich_fields.up,
+    down: migration_20260626_115952_milestones_rich_fields.down,
+    name: '20260626_115952_milestones_rich_fields'
   },
 ];
