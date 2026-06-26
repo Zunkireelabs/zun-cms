@@ -2,6 +2,7 @@
   "name": "zun-cms",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@10.34.4",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
