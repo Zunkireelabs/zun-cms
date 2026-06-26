@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 export const SiteConfig: GlobalConfig = {
   slug: 'site-config',
+  access: { read: () => true },
   admin: { group: 'Settings' },
   fields: [
     { name: 'name', type: 'text', required: true },

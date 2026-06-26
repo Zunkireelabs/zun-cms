@@ -3,6 +3,7 @@ import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidat
 
 export const ProductDomains: CollectionConfig = {
   slug: 'product-domains',
+  access: { read: () => true },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug'],

@@ -3,6 +3,7 @@ import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidat
 
 export const Ventures: CollectionConfig = {
   slug: 'ventures',
+  access: { read: () => true },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'shortName', 'founded'],

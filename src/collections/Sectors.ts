@@ -3,6 +3,7 @@ import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidat
 
 export const Sectors: CollectionConfig = {
   slug: 'sectors',
+  access: { read: () => true },
   admin: {
     useAsTitle: 'name',
   },

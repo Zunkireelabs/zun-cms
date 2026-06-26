@@ -3,6 +3,7 @@ import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidat
 
 export const Leadership: CollectionConfig = {
   slug: 'leadership',
+  access: { read: () => true },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'title', 'order'],
