@@ -6,6 +6,19 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
+# Migrator stage — runs `payload migrate` before the app starts
+FROM base AS migrator
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NODE_OPTIONS=--no-deprecation
+ARG PAYLOAD_SECRET
+ARG DATABASE_URI
+ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
+ENV DATABASE_URI=${DATABASE_URI}
+CMD ["node", "node_modules/.bin/payload", "migrate"]
+
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
