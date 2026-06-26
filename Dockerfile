@@ -1,10 +1,11 @@
 FROM node:20-alpine AS base
+RUN npm install -g pnpm@10.34.4
 
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Migrator stage — runs `payload migrate` before the app starts
 FROM base AS migrator
@@ -29,7 +30,7 @@ ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 ENV DATABASE_URI=${DATABASE_URI}
-RUN corepack enable pnpm && pnpm run build
+RUN pnpm run build
 
 FROM base AS runner
 WORKDIR /app
