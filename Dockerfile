@@ -7,44 +7,30 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
-# Migrator stage — runs `payload migrate` before the app starts
-FROM base AS migrator
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-ENV NODE_OPTIONS=--no-deprecation
-ARG PAYLOAD_SECRET
-ARG DATABASE_URI
-ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
-ENV DATABASE_URI=${DATABASE_URI}
-CMD ["sh", "-c", "echo y | node_modules/.bin/payload migrate"]
-
-# Seeder stage — one-shot import of initial content; invoked manually
-FROM base AS seeder
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-ENV NODE_OPTIONS=--no-deprecation
-ARG PAYLOAD_SECRET
-ARG DATABASE_URI
-ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
-ENV DATABASE_URI=${DATABASE_URI}
-CMD ["node_modules/.bin/tsx", "seed/index.ts"]
-
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS=--no-deprecation
-ARG PAYLOAD_SECRET
-ARG DATABASE_URI
+ARG PAYLOAD_SECRET=ci-build-secret-not-real
+ARG DATABASE_URI=postgresql://postgres:postgres@localhost:5432/zun_cms
 ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 ENV DATABASE_URI=${DATABASE_URI}
 RUN pnpm run build
 
+# Tools image — used at runtime by `migrate` + `seed` services.
+# Has full node_modules + source so it can run `payload migrate` and `tsx seed/index.ts`.
+# Real secrets are injected at runtime via env_file (compose), not baked in.
+FROM base AS tools
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NODE_OPTIONS=--no-deprecation
+CMD ["sh", "-c", "echo y | node_modules/.bin/payload migrate"]
+
+# Runner image — production app server (Next.js standalone).
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
