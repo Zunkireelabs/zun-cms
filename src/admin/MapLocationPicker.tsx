@@ -1,8 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useField, useFormFields } from '@payloadcms/ui'
+import { useField, useFormFields, useDocumentInfo } from '@payloadcms/ui'
 import nepalPaths from './nepal-paths.json'
+
+interface ExistingLocation {
+  id: number
+  name: string
+  latitude: number
+  longitude: number
+  labelOffsetX?: number
+  labelOffsetY?: number
+}
 
 const WIDTH = 1150
 const HEIGHT = 580
@@ -39,6 +48,28 @@ export default function MapLocationPicker() {
 
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState(false)
+  const [existing, setExisting] = useState<ExistingLocation[]>([])
+  const { id: currentDocId } = useDocumentInfo()
+
+  // Fetch every other MapLocation once on mount so the picker can show ghost
+  // pins for context. We filter out the doc being edited (if any) so we don't
+  // double-draw it on top of the active pin.
+  useEffect(() => {
+    fetch('/api/map-locations?limit=100&depth=0')
+      .then((r) => r.json())
+      .then((j) => {
+        const all: ExistingLocation[] = (j?.docs ?? []).map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          latitude: Number(d.latitude),
+          longitude: Number(d.longitude),
+          labelOffsetX: Number(d.labelOffsetX) || 0,
+          labelOffsetY: Number(d.labelOffsetY) || 0,
+        }))
+        setExisting(all.filter((l) => String(l.id) !== String(currentDocId)))
+      })
+      .catch(() => setExisting([]))
+  }, [currentDocId])
   const paths = (nepalPaths as { paths: ProvincePath[] }).paths
   const mapW = (nepalPaths as { width: number }).width
   const mapH = (nepalPaths as { height: number }).height
@@ -156,6 +187,33 @@ export default function MapLocationPicker() {
               />
             ))}
           </g>
+
+          {/* Ghost pins for every other MapLocation — context only, not interactive */}
+          {existing.map((loc) => {
+            const m = latLngToMarker(loc.latitude, loc.longitude)
+            const lx = m.x + 90 + (loc.labelOffsetX || 0)
+            const ly = m.y + (loc.labelOffsetY || 0)
+            return (
+              <g key={`ghost-${loc.id}`} opacity={0.4} pointerEvents="none">
+                <path
+                  d={getElbowPath(m.x, m.y, lx, ly, 'up')}
+                  stroke="#9aa0a6"
+                  strokeWidth={1}
+                  fill="none"
+                />
+                <circle cx={m.x} cy={m.y} r={5} fill="#9aa0a6" />
+                <text
+                  x={lx + 2}
+                  y={ly}
+                  fontSize="11"
+                  fill="#666"
+                  fontFamily="sans-serif"
+                >
+                  {loc.name}
+                </text>
+              </g>
+            )
+          })}
 
           {marker && (
             <>
