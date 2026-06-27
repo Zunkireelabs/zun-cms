@@ -29,6 +29,15 @@ export const Brands: CollectionConfig = {
     { name: 'website', type: 'text' },
     { name: 'logo', type: 'upload', relationTo: 'media' },
     {
+      name: 'brochure',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Upload a PDF brochure for this brand. Surfaces as the "View Brochure" / "Download Brochure" buttons on the trading pages.',
+      },
+    },
+    {
       name: 'venture',
       type: 'relationship',
       relationTo: 'ventures',

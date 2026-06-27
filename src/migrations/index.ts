@@ -5,6 +5,7 @@ import * as migration_20260626_124544_new_collections from './20260626_124544_ne
 import * as migration_20260627_120000_map_locations from './20260627_120000_map_locations';
 import * as migration_20260627_180000_map_locations_latlng from './20260627_180000_map_locations_latlng';
 import * as migration_20260627_190000_map_label_offsets from './20260627_190000_map_label_offsets';
+import * as migration_20260628_080000_brand_brochure from './20260628_080000_brand_brochure';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260627_190000_map_label_offsets.up,
     down: migration_20260627_190000_map_label_offsets.down,
     name: '20260627_190000_map_label_offsets',
+  },
+  {
+    up: migration_20260628_080000_brand_brochure.up,
+    down: migration_20260628_080000_brand_brochure.down,
+    name: '20260628_080000_brand_brochure',
   },
 ];
