@@ -49,6 +49,8 @@ export default function MapLocationPicker() {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dragging, setDragging] = useState(false)
   const [existing, setExisting] = useState<ExistingLocation[]>([])
+  const [savingGhostId, setSavingGhostId] = useState<number | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const { id: currentDocId } = useDocumentInfo()
 
   // Fetch every other MapLocation once on mount so the picker can show ghost
@@ -112,6 +114,63 @@ export default function MapLocationPicker() {
     setOffY(0)
   }
 
+  // Drag a ghost label — updates local state live, PATCHes the doc on mouseup
+  function handleGhostMouseDown(e: React.MouseEvent<SVGGElement>, ghostId: number) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragging(true)
+    const startSvg = svgCoordsFromEvent({ clientX: e.clientX, clientY: e.clientY })
+    if (!startSvg) return
+    const target = existing.find((l) => l.id === ghostId)
+    if (!target) return
+    const startOffX = target.labelOffsetX || 0
+    const startOffY = target.labelOffsetY || 0
+    let nextOffX = startOffX
+    let nextOffY = startOffY
+
+    function move(ev: MouseEvent) {
+      const cur = svgCoordsFromEvent({ clientX: ev.clientX, clientY: ev.clientY })
+      if (!cur) return
+      const dx = cur.x - startSvg!.x
+      const dy = cur.y - startSvg!.y
+      nextOffX = Math.round(startOffX + dx)
+      nextOffY = Math.round(startOffY + dy)
+      setExisting((prev) =>
+        prev.map((l) => (l.id === ghostId ? { ...l, labelOffsetX: nextOffX, labelOffsetY: nextOffY } : l)),
+      )
+    }
+    async function up() {
+      setDragging(false)
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', up)
+      // Only PATCH if the position actually changed
+      if (nextOffX === startOffX && nextOffY === startOffY) return
+      setSavingGhostId(ghostId)
+      setSaveError(null)
+      try {
+        const res = await fetch(`/api/map-locations/${ghostId}`, {
+          method: 'PATCH',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ labelOffsetX: nextOffX, labelOffsetY: nextOffY }),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      } catch (err: any) {
+        // Revert on failure
+        setExisting((prev) =>
+          prev.map((l) =>
+            l.id === ghostId ? { ...l, labelOffsetX: startOffX, labelOffsetY: startOffY } : l,
+          ),
+        )
+        setSaveError(`Failed to save: ${err?.message ?? 'unknown error'}`)
+      } finally {
+        setSavingGhostId(null)
+      }
+    }
+    window.addEventListener('mousemove', move)
+    window.addEventListener('mouseup', up)
+  }
+
   // Label drag handlers
   function handleLabelMouseDown(e: React.MouseEvent<SVGGElement>) {
     if (!marker) return
@@ -152,8 +211,23 @@ export default function MapLocationPicker() {
   return (
     <div style={{ margin: '1.5rem 0' }}>
       <div style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--theme-elevation-650)' }}>
-        <strong>Pin placement</strong> — click the map to place the pin, drag the label to reposition it.
+        <strong>Pin placement</strong> — click the map to place this pin. Drag any label (gold or gray) to reposition it; gray labels save back to their own document automatically.
       </div>
+      {saveError && (
+        <div
+          style={{
+            marginBottom: '0.5rem',
+            padding: '0.4rem 0.6rem',
+            fontSize: '0.8rem',
+            color: '#b00020',
+            background: '#fef0f0',
+            border: '1px solid #f5c2c2',
+            borderRadius: '4px',
+          }}
+        >
+          {saveError}
+        </div>
+      )}
       <div
         style={{
           border: '1px solid var(--theme-elevation-150)',
@@ -188,29 +262,51 @@ export default function MapLocationPicker() {
             ))}
           </g>
 
-          {/* Ghost pins for every other MapLocation — context only, not interactive */}
+          {/* Ghost pins for every other MapLocation — labels are draggable + auto-saved */}
           {existing.map((loc) => {
             const m = latLngToMarker(loc.latitude, loc.longitude)
             const lx = m.x + 90 + (loc.labelOffsetX || 0)
             const ly = m.y + (loc.labelOffsetY || 0)
+            const isSaving = savingGhostId === loc.id
+            const labelWidth = Math.max(110, loc.name.length * 6.5 + 12)
             return (
-              <g key={`ghost-${loc.id}`} opacity={0.4} pointerEvents="none">
+              <g key={`ghost-${loc.id}`} opacity={isSaving ? 0.7 : 0.5}>
                 <path
                   d={getElbowPath(m.x, m.y, lx, ly, 'up')}
                   stroke="#9aa0a6"
                   strokeWidth={1}
                   fill="none"
+                  pointerEvents="none"
                 />
-                <circle cx={m.x} cy={m.y} r={5} fill="#9aa0a6" />
-                <text
-                  x={lx + 2}
-                  y={ly}
-                  fontSize="11"
-                  fill="#666"
-                  fontFamily="sans-serif"
+                <circle cx={m.x} cy={m.y} r={5} fill="#9aa0a6" pointerEvents="none" />
+                <g
+                  data-label-handle="1"
+                  style={{ cursor: dragging ? 'grabbing' : 'grab' }}
+                  onMouseDown={(e) => handleGhostMouseDown(e, loc.id)}
                 >
-                  {loc.name}
-                </text>
+                  {/* Invisible-ish hitbox makes the label easier to grab */}
+                  <rect
+                    x={lx - 4}
+                    y={ly - 12}
+                    width={labelWidth}
+                    height={18}
+                    fill="white"
+                    stroke="#9aa0a6"
+                    strokeWidth={isSaving ? 1.5 : 0.8}
+                    strokeDasharray={isSaving ? '3 2' : undefined}
+                    rx={2}
+                  />
+                  <text
+                    x={lx + 2}
+                    y={ly}
+                    fontSize="11"
+                    fill="#555"
+                    fontFamily="sans-serif"
+                    pointerEvents="none"
+                  >
+                    {loc.name}
+                  </text>
+                </g>
               </g>
             )
           })}
