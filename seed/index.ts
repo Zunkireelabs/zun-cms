@@ -876,6 +876,70 @@ async function seedJobs(payload: Awaited<ReturnType<typeof getPayload>>) {
   console.log(`  ✓ jobs: ${created} created, ${updated} updated`)
 }
 
+// ─── Step 17: MapLocations collection ───────────────────────────────────────
+
+const MAP_LOCATION_SOURCES: {
+  name: string
+  markerX: number
+  markerY: number
+  labelX: number
+  labelY: number
+  direction: 'up' | 'down'
+  keywords?: string[]
+}[] = [
+  { name: 'Nepalgunj, Nepal',  markerX: 345, markerY: 330, labelX: 155, labelY: 275, direction: 'up' },
+  { name: 'Pokhara, Nepal',    markerX: 500, markerY: 300, labelX: 380, labelY: 225, direction: 'up' },
+  { name: 'Gorkha, Nepal',     markerX: 555, markerY: 310, labelX: 555, labelY: 235, direction: 'up' },
+  { name: 'Bhairahawa, Nepal', markerX: 470, markerY: 380, labelX: 340, labelY: 440, direction: 'down', keywords: ['lumbini', 'bhairahawa'] },
+  { name: 'Chitwan, Nepal',    markerX: 560, markerY: 385, labelX: 500, labelY: 450, direction: 'down', keywords: ['nawalparasi'] },
+  { name: 'Dhulikhel, Nepal',  markerX: 690, markerY: 360, labelX: 780, labelY: 275, direction: 'up',   keywords: ['namo buddha', 'kavre'] },
+  { name: 'Kathmandu, Nepal',  markerX: 650, markerY: 375, labelX: 780, labelY: 340, direction: 'up' },
+  { name: 'Bhaktapur, Nepal',  markerX: 675, markerY: 388, labelX: 780, labelY: 395, direction: 'down', keywords: ['nagarkot'] },
+  { name: 'Lalitpur, Nepal',   markerX: 645, markerY: 400, labelX: 780, labelY: 450, direction: 'down' },
+  { name: 'Biratnagar, Nepal', markerX: 840, markerY: 460, labelX: 920, labelY: 405, direction: 'up' },
+]
+
+async function seedMapLocations(payload: Awaited<ReturnType<typeof getPayload>>) {
+  console.log('\nSeeding map locations...')
+  let created = 0
+  let updated = 0
+  for (const loc of MAP_LOCATION_SOURCES) {
+    try {
+      const existing = await payload.find({
+        collection: 'map-locations',
+        where: { name: { equals: loc.name } },
+        limit: 1,
+      })
+      const data = {
+        name: loc.name,
+        markerX: loc.markerX,
+        markerY: loc.markerY,
+        labelX: loc.labelX,
+        labelY: loc.labelY,
+        direction: loc.direction,
+        keywords: (loc.keywords ?? []).map((k) => ({ value: k })),
+      }
+      if (existing.docs.length > 0) {
+        await payload.update({
+          collection: 'map-locations',
+          id: existing.docs[0].id,
+          data,
+        })
+        console.log(`  Updated map location: ${loc.name}`)
+        updated++
+        continue
+      }
+      await payload.create({ collection: 'map-locations', data })
+      console.log(`  Created map location: ${loc.name}`)
+      created++
+    } catch (err) {
+      console.error(`  [error] Failed to upsert map location ${loc.name}:`, err)
+      errorCount++
+    }
+  }
+  console.log(`  ✓ map-locations: ${created} created, ${updated} updated`)
+}
+
 // ─── Step 16: Backfill product-domain metrics ───────────────────────────────
 
 const DOMAIN_METRIC_SOURCES: { slug: string; installedAreaSqFt: number; metricLabel: string }[] = [
@@ -1135,6 +1199,9 @@ async function seed() {
   // Step 16: Backfill product-domain metrics
   await backfillProductDomainMetrics(payload)
 
+  // Step 17: MapLocations
+  await seedMapLocations(payload)
+
   // Print summary
   console.log('\n========== Seed Summary ==========')
   const counts = await Promise.all([
@@ -1151,6 +1218,7 @@ async function seed() {
     payload.find({ collection: 'media', limit: 0 }),
     payload.find({ collection: 'hero-slides', limit: 0 }),
     payload.find({ collection: 'jobs', limit: 0 }),
+    payload.find({ collection: 'map-locations', limit: 0 }),
   ])
 
   console.log(`  ventures:        ${counts[0].totalDocs}`)
@@ -1166,6 +1234,7 @@ async function seed() {
   console.log(`  media:           ${counts[10].totalDocs}`)
   console.log(`  hero-slides:     ${counts[11].totalDocs}`)
   console.log(`  jobs:            ${counts[12].totalDocs}`)
+  console.log(`  map-locations:   ${counts[13].totalDocs}`)
   console.log('==================================')
 
   if (errorCount > 0) {

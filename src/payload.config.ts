@@ -19,6 +19,7 @@ import { Certifications } from './collections/Certifications'
 import { Milestones } from './collections/Milestones'
 import { HeroSlides } from './collections/HeroSlides'
 import { Jobs } from './collections/Jobs'
+import { MapLocations } from './collections/MapLocations'
 
 // Globals
 import { SiteConfig } from './globals/SiteConfig'
@@ -50,6 +51,7 @@ export default buildConfig({
     Milestones,
     HeroSlides,
     Jobs,
+    MapLocations,
   ],
   globals: [SiteConfig],
   secret: (() => {
