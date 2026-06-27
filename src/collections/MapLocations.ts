@@ -6,9 +6,9 @@ export const MapLocations: CollectionConfig = {
   access: { read: () => true },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'markerX', 'markerY', 'direction'],
+    defaultColumns: ['name', 'latitude', 'longitude', 'direction'],
     description:
-      'Pin coordinates for the Nepal project map on the home page. Each project whose `location` matches a name here (or any of the keywords) is shown at the marker.',
+      'Pin coordinates for the Nepal project map on the home page. Each project whose `location` matches a name here (or any of the keywords) is shown at the corresponding lat/lng. The website converts lat/lng to SVG coords automatically — the hand-drawn map is not a true projection, so pins land approximately (within ~50px of the true position) but obviously in the right region.',
   },
   hooks: {
     afterChange: [afterChangeRevalidate('map-locations')],
@@ -23,28 +23,19 @@ export const MapLocations: CollectionConfig = {
       admin: { description: 'Exact match for the Project.location field, e.g. "Kathmandu, Nepal".' },
     },
     {
-      name: 'markerX',
+      name: 'latitude',
       type: 'number',
       required: true,
-      admin: { description: 'SVG x coord of the pin dot (0–1000 range).' },
+      admin: {
+        description:
+          'Geographic latitude. Get it from Google Maps: right-click any place → click the coordinates at the top → it copies "lat, lng" to your clipboard.',
+      },
     },
     {
-      name: 'markerY',
+      name: 'longitude',
       type: 'number',
       required: true,
-      admin: { description: 'SVG y coord of the pin dot.' },
-    },
-    {
-      name: 'labelX',
-      type: 'number',
-      required: true,
-      admin: { description: 'SVG x coord where the label text starts.' },
-    },
-    {
-      name: 'labelY',
-      type: 'number',
-      required: true,
-      admin: { description: 'SVG y coord of the label text baseline.' },
+      admin: { description: 'Geographic longitude (the second number from Google Maps).' },
     },
     {
       name: 'direction',

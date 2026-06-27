@@ -880,23 +880,21 @@ async function seedJobs(payload: Awaited<ReturnType<typeof getPayload>>) {
 
 const MAP_LOCATION_SOURCES: {
   name: string
-  markerX: number
-  markerY: number
-  labelX: number
-  labelY: number
+  latitude: number
+  longitude: number
   direction: 'up' | 'down'
   keywords?: string[]
 }[] = [
-  { name: 'Nepalgunj, Nepal',  markerX: 345, markerY: 330, labelX: 155, labelY: 275, direction: 'up' },
-  { name: 'Pokhara, Nepal',    markerX: 500, markerY: 300, labelX: 380, labelY: 225, direction: 'up' },
-  { name: 'Gorkha, Nepal',     markerX: 555, markerY: 310, labelX: 555, labelY: 235, direction: 'up' },
-  { name: 'Bhairahawa, Nepal', markerX: 470, markerY: 380, labelX: 340, labelY: 440, direction: 'down', keywords: ['lumbini', 'bhairahawa'] },
-  { name: 'Chitwan, Nepal',    markerX: 560, markerY: 385, labelX: 500, labelY: 450, direction: 'down', keywords: ['nawalparasi'] },
-  { name: 'Dhulikhel, Nepal',  markerX: 690, markerY: 360, labelX: 780, labelY: 275, direction: 'up',   keywords: ['namo buddha', 'kavre'] },
-  { name: 'Kathmandu, Nepal',  markerX: 650, markerY: 375, labelX: 780, labelY: 340, direction: 'up' },
-  { name: 'Bhaktapur, Nepal',  markerX: 675, markerY: 388, labelX: 780, labelY: 395, direction: 'down', keywords: ['nagarkot'] },
-  { name: 'Lalitpur, Nepal',   markerX: 645, markerY: 400, labelX: 780, labelY: 450, direction: 'down' },
-  { name: 'Biratnagar, Nepal', markerX: 840, markerY: 460, labelX: 920, labelY: 405, direction: 'up' },
+  { name: 'Nepalgunj, Nepal',  latitude: 28.0500, longitude: 81.6167, direction: 'up' },
+  { name: 'Pokhara, Nepal',    latitude: 28.2096, longitude: 83.9856, direction: 'up' },
+  { name: 'Gorkha, Nepal',     latitude: 28.0000, longitude: 84.6275, direction: 'up' },
+  { name: 'Bhairahawa, Nepal', latitude: 27.5000, longitude: 83.4500, direction: 'down', keywords: ['lumbini', 'bhairahawa'] },
+  { name: 'Chitwan, Nepal',    latitude: 27.6766, longitude: 84.4322, direction: 'down', keywords: ['nawalparasi'] },
+  { name: 'Dhulikhel, Nepal',  latitude: 27.6195, longitude: 85.5479, direction: 'up',   keywords: ['namo buddha', 'kavre'] },
+  { name: 'Kathmandu, Nepal',  latitude: 27.7172, longitude: 85.3240, direction: 'up' },
+  { name: 'Bhaktapur, Nepal',  latitude: 27.6710, longitude: 85.4298, direction: 'down', keywords: ['nagarkot'] },
+  { name: 'Lalitpur, Nepal',   latitude: 27.6588, longitude: 85.3247, direction: 'down' },
+  { name: 'Biratnagar, Nepal', latitude: 26.4525, longitude: 87.2718, direction: 'up' },
 ]
 
 async function seedMapLocations(payload: Awaited<ReturnType<typeof getPayload>>) {
@@ -912,10 +910,8 @@ async function seedMapLocations(payload: Awaited<ReturnType<typeof getPayload>>)
       })
       const data = {
         name: loc.name,
-        markerX: loc.markerX,
-        markerY: loc.markerY,
-        labelX: loc.labelX,
-        labelY: loc.labelY,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
         direction: loc.direction,
         keywords: (loc.keywords ?? []).map((k) => ({ value: k })),
       }
