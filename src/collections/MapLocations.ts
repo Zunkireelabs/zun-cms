@@ -16,6 +16,15 @@ export const MapLocations: CollectionConfig = {
   },
   fields: [
     {
+      name: 'picker',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/src/admin/MapLocationPicker',
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,
@@ -47,6 +56,30 @@ export const MapLocations: CollectionConfig = {
         { value: 'down', label: 'Down (label below marker)' },
       ],
       admin: { description: 'Which way the elbow connector bends.' },
+    },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'labelOffsetX',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            width: '50%',
+            description:
+              'Optional. Pixel offset from the auto-placed label position. Positive = right, negative = left. Use the map picker above to drag the label visually.',
+          },
+        },
+        {
+          name: 'labelOffsetY',
+          type: 'number',
+          defaultValue: 0,
+          admin: {
+            width: '50%',
+            description: 'Optional. Pixel offset. Positive = down, negative = up.',
+          },
+        },
+      ],
     },
     {
       name: 'keywords',

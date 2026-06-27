@@ -4,6 +4,7 @@ import * as migration_20260626_122531_siteconfig_richer from './20260626_122531_
 import * as migration_20260626_124544_new_collections from './20260626_124544_new_collections';
 import * as migration_20260627_120000_map_locations from './20260627_120000_map_locations';
 import * as migration_20260627_180000_map_locations_latlng from './20260627_180000_map_locations_latlng';
+import * as migration_20260627_190000_map_label_offsets from './20260627_190000_map_label_offsets';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260627_180000_map_locations_latlng.up,
     down: migration_20260627_180000_map_locations_latlng.down,
     name: '20260627_180000_map_locations_latlng',
+  },
+  {
+    up: migration_20260627_190000_map_label_offsets.up,
+    down: migration_20260627_190000_map_label_offsets.down,
+    name: '20260627_190000_map_label_offsets',
   },
 ];
