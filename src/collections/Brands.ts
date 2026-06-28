@@ -34,7 +34,15 @@ export const Brands: CollectionConfig = {
       relationTo: 'media',
       admin: {
         description:
-          'Upload a PDF brochure for this brand. Surfaces as the "View Brochure" / "Download Brochure" buttons on the trading pages.',
+          'Upload a PDF — drives the "Download Brochure" button on the trading pages. Leave empty to grey out that button.',
+      },
+    },
+    {
+      name: 'brochureUrl',
+      type: 'text',
+      admin: {
+        description:
+          'External link (flipbook / online viewer) — drives the "View Brochure" button. e.g. https://brand.com/catalogue. Leave empty to grey out that button.',
       },
     },
     {
