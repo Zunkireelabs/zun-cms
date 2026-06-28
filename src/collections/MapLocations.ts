@@ -32,6 +32,15 @@ export const MapLocations: CollectionConfig = {
       admin: { description: 'Exact match for the Project.location field, e.g. "Kathmandu, Nepal".' },
     },
     {
+      name: 'projectsAtLocation',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/src/admin/MapLocationProjects',
+        },
+      },
+    },
+    {
       name: 'latitude',
       type: 'number',
       required: true,

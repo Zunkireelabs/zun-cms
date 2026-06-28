@@ -13,6 +13,18 @@ export const Projects: CollectionConfig = {
     afterDelete: [afterDeleteRevalidate('projects')],
   },
   fields: [
+    {
+      // Hidden helper: when the form opens with ?location=... in the URL,
+      // pre-fills the location field. Used by the "Add Project Here"
+      // button on the MapLocation form.
+      name: 'locationPrefill',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/src/admin/ProjectLocationPrefill',
+        },
+      },
+    },
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'client', type: 'text', required: true },
