@@ -53,5 +53,17 @@ export const ProductDomains: CollectionConfig = {
           'Label shown next to the metric (e.g. "False Ceiling Installed", "Roofing Installed").',
       },
     },
+    {
+      // Inline panel listing every Brand tagged with this trading domain,
+      // plus an "Add Brand Here" button that opens the brand create form
+      // with this domain pre-selected.
+      name: 'brandsInDomain',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/src/admin/ProductDomainBrands',
+        },
+      },
+    },
   ],
 }

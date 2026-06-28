@@ -13,6 +13,18 @@ export const Brands: CollectionConfig = {
     afterDelete: [afterDeleteRevalidate('brands')],
   },
   fields: [
+    {
+      // Hidden helper: when the form opens with ?tradingDomains=<id> in the
+      // URL (from the "Add Brand Here" button on a ProductDomain), adds that
+      // id to the tradingDomains relationship. No visible rendering.
+      name: 'tradingDomainsPrefill',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/src/admin/BrandTradingDomainPrefill',
+        },
+      },
+    },
     { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true },
     { name: 'country', type: 'text', required: true },
