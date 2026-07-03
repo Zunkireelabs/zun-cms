@@ -12,7 +12,7 @@ export const Media: CollectionConfig = {
       { name: 'tablet', width: 1024 },
     ],
     adminThumbnail: 'thumbnail',
-    mimeTypes: ['image/*', 'application/pdf'],
+    mimeTypes: ['image/*', 'application/pdf', 'text/plain'],
   },
   fields: [
     { name: 'alt', type: 'text', required: true },
