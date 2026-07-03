@@ -7,6 +7,7 @@ export const Leadership: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'title', 'order'],
+    hidden: true,
   },
   hooks: {
     afterChange: [afterChangeRevalidate('leadership')],

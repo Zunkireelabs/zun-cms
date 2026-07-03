@@ -7,6 +7,7 @@ export const Events: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'year', 'featured'],
+    hidden: true,
   },
   hooks: {
     afterChange: [afterChangeRevalidate('events')],

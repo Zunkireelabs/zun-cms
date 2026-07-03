@@ -5,6 +5,7 @@ export const Users: CollectionConfig = {
   auth: true,
   admin: {
     useAsTitle: 'email',
+    hidden: true,
   },
   access: {
     read: ({ req }) => Boolean(req.user),

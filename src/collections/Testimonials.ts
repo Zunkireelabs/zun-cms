@@ -7,6 +7,7 @@ export const Testimonials: CollectionConfig = {
   admin: {
     useAsTitle: 'client',
     defaultColumns: ['client', 'clientType', 'deliveredBy', 'date'],
+    hidden: true,
   },
   hooks: {
     afterChange: [afterChangeRevalidate('testimonials')],

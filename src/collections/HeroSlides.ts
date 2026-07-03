@@ -7,6 +7,7 @@ export const HeroSlides: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['order', 'title', 'alt'],
+    hidden: true,
   },
   hooks: {
     afterChange: [afterChangeRevalidate('hero-slides')],
