@@ -32,6 +32,9 @@ export default buildConfig({
     user: 'users',
     meta: { titleSuffix: '— CMS Group Admin' },
     components: {
+      graphics: {
+        Logo: '@/components/admin/Logo#Logo',
+      },
       providers: ['/src/admin/PasswordEyeToggle'],
     },
   },
