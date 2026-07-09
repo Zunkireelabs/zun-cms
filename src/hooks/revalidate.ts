@@ -5,13 +5,17 @@ async function triggerRevalidate(body: Record<string, unknown>) {
   const secret = process.env.REVALIDATE_SECRET
   if (!url || !secret) return
   try {
-    await fetch(`${url}/api/revalidate`, {
+    const res = await fetch(`${url}/api/revalidate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
       body: JSON.stringify(body),
     })
-  } catch (_) {
+    if (!res.ok) {
+      console.error(`[revalidate] website rejected request (${res.status}):`, await res.text().catch(() => ''), body)
+    }
+  } catch (err) {
     // non-blocking — never fail a save because of revalidation
+    console.error('[revalidate] failed to reach website:', err, body)
   }
 }
 
