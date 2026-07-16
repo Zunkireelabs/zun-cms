@@ -7,6 +7,7 @@ import * as migration_20260627_180000_map_locations_latlng from './20260627_1800
 import * as migration_20260627_190000_map_label_offsets from './20260627_190000_map_label_offsets';
 import * as migration_20260628_080000_brand_brochure from './20260628_080000_brand_brochure';
 import * as migration_20260628_100000_brand_brochure_url from './20260628_100000_brand_brochure_url';
+import * as migration_20260716_130000_brand_brochures_array from './20260716_130000_brand_brochures_array';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260628_100000_brand_brochure_url.up,
     down: migration_20260628_100000_brand_brochure_url.down,
     name: '20260628_100000_brand_brochure_url',
+  },
+  {
+    up: migration_20260716_130000_brand_brochures_array.up,
+    down: migration_20260716_130000_brand_brochures_array.down,
+    name: '20260716_130000_brand_brochures_array',
   },
 ];

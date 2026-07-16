@@ -9,8 +9,7 @@ interface Brand {
   slug: string
   country?: string
   website?: string
-  brochureUrl?: string
-  hasBrochure: boolean
+  brochureCount: number
 }
 
 export default function ProductDomainBrands() {
@@ -47,8 +46,7 @@ export default function ProductDomainBrands() {
             slug: d.slug,
             country: d.country,
             website: d.website,
-            brochureUrl: d.brochureUrl,
-            hasBrochure: Boolean(d.brochure),
+            brochureCount: Array.isArray(d.brochures) ? d.brochures.length : 0,
           })),
         )
       })
@@ -175,23 +173,9 @@ export default function ProductDomainBrands() {
                       website
                     </span>
                   )}
-                  {b.brochureUrl && (
+                  {b.brochureCount > 0 && (
                     <span
-                      title="View Brochure link set"
-                      style={{
-                        marginRight: '0.3rem',
-                        padding: '0.05rem 0.35rem',
-                        background: '#e0e8f0',
-                        color: '#1f4a6a',
-                        borderRadius: '3px',
-                      }}
-                    >
-                      view link
-                    </span>
-                  )}
-                  {b.hasBrochure && (
-                    <span
-                      title="Download PDF uploaded"
+                      title={`${b.brochureCount} brochure${b.brochureCount === 1 ? '' : 's'} added`}
                       style={{
                         padding: '0.05rem 0.35rem',
                         background: '#f0e8e0',
@@ -199,7 +183,7 @@ export default function ProductDomainBrands() {
                         borderRadius: '3px',
                       }}
                     >
-                      PDF
+                      {b.brochureCount} brochure{b.brochureCount === 1 ? '' : 's'}
                     </span>
                   )}
                 </span>

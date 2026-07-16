@@ -41,21 +41,35 @@ export const Brands: CollectionConfig = {
     { name: 'website', type: 'text' },
     { name: 'logo', type: 'upload', relationTo: 'media' },
     {
-      name: 'brochure',
-      type: 'upload',
-      relationTo: 'media',
+      name: 'brochures',
+      type: 'array',
       admin: {
         description:
-          'Upload a PDF — drives the "Download Brochure" button on the trading pages. Leave empty to grey out that button.',
+          'Add one entry per brochure. Each can have a PDF and/or an external link — add more if this brand has more than one.',
       },
-    },
-    {
-      name: 'brochureUrl',
-      type: 'text',
-      admin: {
-        description:
-          'External link (flipbook / online viewer) — drives the "View Brochure" button. e.g. https://brand.com/catalogue. Leave empty to grey out that button.',
-      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          admin: { description: 'Optional — helps tell entries apart, e.g. "Catalogue 2026".' },
+        },
+        {
+          name: 'file',
+          type: 'upload',
+          relationTo: 'media',
+          admin: {
+            description: 'Upload a PDF — drives the "Download Brochure" button on the trading pages.',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          admin: {
+            description:
+              'External link (flipbook / online viewer) — drives the "View Brochure" button. e.g. https://brand.com/catalogue.',
+          },
+        },
+      ],
     },
     {
       name: 'venture',
