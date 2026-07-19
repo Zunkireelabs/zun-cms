@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from '../fields/slug'
 import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
 
 export const Ventures: CollectionConfig = {
@@ -15,13 +16,7 @@ export const Ventures: CollectionConfig = {
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'shortName', type: 'text', required: true },
-    {
-      name: 'slug',
-      type: 'text',
-      required: true,
-      unique: true,
-      admin: { description: 'URL-safe identifier' },
-    },
+    slugField('name'),
     { name: 'founded', type: 'number', required: true },
     { name: 'tagline', type: 'text' },
     { name: 'description', type: 'textarea', required: true },

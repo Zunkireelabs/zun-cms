@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from '../fields/slug'
 import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
 
 export const Jobs: CollectionConfig = {
@@ -14,7 +15,7 @@ export const Jobs: CollectionConfig = {
   },
   fields: [
     { name: 'title', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true },
+    slugField(),
     { name: 'location', type: 'text', required: true },
     {
       name: 'type',

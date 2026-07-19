@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from '../fields/slug'
 import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
 
 export const Projects: CollectionConfig = {
@@ -26,7 +27,7 @@ export const Projects: CollectionConfig = {
       },
     },
     { name: 'title', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true },
+    slugField(),
     { name: 'client', type: 'text', required: true },
     { name: 'location', type: 'text', required: true },
     { name: 'year', type: 'number', required: true },

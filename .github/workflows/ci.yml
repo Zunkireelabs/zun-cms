@@ -18,6 +18,9 @@ jobs:
       - name: Check revalidate hooks
         run: node scripts/check-revalidate-hooks.mjs
 
+      - name: Check slug fields
+        run: node scripts/check-slug-fields.mjs
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4

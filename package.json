@@ -10,7 +10,8 @@
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx seed/index.ts",
     "generate:types": "payload generate:types",
-    "check:revalidate-hooks": "node scripts/check-revalidate-hooks.mjs"
+    "check:revalidate-hooks": "node scripts/check-revalidate-hooks.mjs",
+    "check:slug-fields": "node scripts/check-slug-fields.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.0.0",
