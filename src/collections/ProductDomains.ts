@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from '../fields/slug'
 import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
 
 export const ProductDomains: CollectionConfig = {
@@ -13,7 +14,7 @@ export const ProductDomains: CollectionConfig = {
     afterDelete: [afterDeleteRevalidate('product-domains')],
   },
   fields: [
-    { name: 'slug', type: 'text', required: true, unique: true },
+    slugField(),
     { name: 'title', type: 'text', required: true },
     { name: 'description', type: 'textarea', required: true },
     { name: 'image', type: 'upload', relationTo: 'media' },

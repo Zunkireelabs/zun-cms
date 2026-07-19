@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { slugField } from '../fields/slug'
 import { afterChangeRevalidate, afterDeleteRevalidate } from '../hooks/revalidate'
 
 export const Brands: CollectionConfig = {
@@ -26,7 +27,7 @@ export const Brands: CollectionConfig = {
       },
     },
     { name: 'name', type: 'text', required: true },
-    { name: 'slug', type: 'text', required: true, unique: true },
+    slugField('name'),
     { name: 'country', type: 'text', required: true },
     { name: 'founded', type: 'number' },
     {
